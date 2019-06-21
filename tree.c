@@ -29,6 +29,8 @@ struct tfs_node_t** tfs_node_chdir(struct tfs_node_t **cwd, char *path) {
         printf("W: Caminho não alterado\n");
         return cwd;
     }
+    if (path[0] == '/')
+        path++; // Ignorar o primeiro / se tiver
     if (tfs_is_depth_path(path)) {
         char *folder = tfs_strstack__read_until_str(path, '/');
         if (folder == NULL)
@@ -108,6 +110,19 @@ void tfs_node__destroy(struct tfs_node_t** root) {
     free(*root);
     *root = NULL;
 }
+
+int tfs_string_is_file(char *str) {
+    for (int i = 0; i < strlen(str); i++) {
+        if (str[i] == '.')
+            return 1;
+    }
+    return 0;
+}
+
+int tfs_members_is_file(struct tfs_members_t *obj) {
+    return tfs_string_is_file(obj->name);
+}
+
 
 #ifdef TESTMODE
 #include <assert.h>

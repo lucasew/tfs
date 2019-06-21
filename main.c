@@ -20,6 +20,8 @@ int main() {
     print_node(root, 0);
     struct tfs_node_t **ret = tfs_node_chdir(&root, "media/dados/Jogos");
     assert(ret);
+    assert(!tfs_node_chdir(&root, "/root"));
+    assert(tfs_node_chdir(&root, "/media") == tfs_node_chdir(&root, "media")); // O / não pode dar diferença, de onde ele parte depende do root
     print_node(*ret, 0);
     print_node(*(*ret)->father, 0);
     tfs_node__destroy(&root);
