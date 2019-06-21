@@ -11,6 +11,7 @@ struct tfs_node_t **tfs_members__append(struct tfs_node_t **node, char *name) {
     if (*node == NULL) {
         assert((*node = malloc(sizeof(struct tfs_node_t))) != NULL);
         (*node)->children = NULL;
+        (*node)->father = NULL;
     }
     if ((*node)->children == NULL) {
         assert(((*node)->children = malloc(sizeof(struct tfs_members_t*))) != NULL);

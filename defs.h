@@ -11,6 +11,7 @@ struct tfs_app_ctx_t {
 // node é como se fosse a pasta, members são os membros do node
 struct tfs_node_t {
     struct tfs_members_t **children;
+    struct tfs_node_t **father;
 };
 
 struct tfs_members_t {
