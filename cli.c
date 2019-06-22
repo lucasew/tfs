@@ -89,6 +89,52 @@ int tfs_cmd_tree(int argc, char **argv) {
     tfs_node__print(*origin, 0);
     return 0;
 }
+// Checa se b é filho de a
+int tfs_node_is_father(struct tfs_node_t *a, struct tfs_node_t *b) {
+    if (b == NULL)
+        return 0;
+    if (b->father == NULL)
+        return 0;
+    if (a == *b->father) {
+        return 1;
+    }
+    return tfs_node_is_father(a, *b->father);
+}
+
+void tfs_find_and_delete(struct tfs_members_t **member, struct tfs_members_t *to_find) {
+    if (*member == NULL)
+        return;
+    struct tfs_members_t *this = *member;
+    if (this == to_find) {
+        struct tfs_members_t *to_delete = this;
+        *member = this->next;
+        to_delete->next = NULL;
+        tfs_members__destroy(&to_delete);
+        return;
+    }
+    tfs_find_and_delete(&this->next, to_find);
+}
+
+int tfs_cmd_rm(int argc, char **argv) {
+    struct tfs_node_t **destination = NULL, **origin = tfs_get_cwd();
+    if (argc < 2) {
+        tfs_log_err("Falta operando: Caminho a se apagar\n");
+        return 1;
+    }
+    destination = tfs_node_chdir(origin, argv[1]);
+    if (!destination) {
+        tfs_log_err("Caminho inválido\n");
+        return 1;
+    }
+    if (!*destination)
+        return 1;
+    if (tfs_node_is_father(*destination, *tfs_get_cwd())) {
+        tfs_log_err("Não posso excluir um diretório acima da pasta atual\n");
+        return 1;
+    }
+    tfs_find_and_delete((*(*destination)->father)->children, (*destination)->node_of);
+    return 0;
+}
 
 int tfs_cmd_cd(int argc, char **argv) {
     if (argc < 2) {
@@ -193,6 +239,8 @@ struct tfs_command cmds[] = {
     {"edc", tfs_cmd_enable_dir_check},
     {"ddc", tfs_cmd_disable_dir_check},
     {"help", tfs_cmd_help},
+    {"rm", tfs_cmd_rm},
+    {"del", tfs_cmd_rm},
     {NULL, NULL}
 };
 struct tfs_args_t tfs_repl_handle() {
