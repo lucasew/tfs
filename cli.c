@@ -211,6 +211,13 @@ int tfs_cmd_disable_dir_check(int argc, char **argv) {
     return 0;
 }
 
+void tfs_path_print(struct tfs_node_t *cwd);
+int tfs_cmd_cwd(int argc, char **argv) {
+    tfs_path_print(*tfs_get_cwd());
+    printf("\n");
+    return 0;
+}
+
 int tfs_cmd_help(int argc, char **argv) {
     tfs_log_info("TFS - Tree File System by Lucas59356 <lucas59356@gmail.com>\n");
     tfs_log_info("COMANDOS\n");
@@ -224,6 +231,10 @@ int tfs_cmd_help(int argc, char **argv) {
     tfs_log_info("\tedc           - Ativa checagem de arquivos e pastas usando o critério do ponto (padrão)\n");
     tfs_log_info("\tddc           - Desativa checagem de arquivos e pastas usando o critério do ponto\n");
     tfs_log_info("\thelp          - Mostra isso xD\n");
+    tfs_log_info("\trm            - Apaga elementos\n");
+    tfs_log_info("\tdel           - Alias de rm\n");
+    tfs_log_info("\tcwd           - Exibe a pasta atual\n");
+    tfs_log_info("\tpwd           - Alias de cwd\n");
     tfs_log_info("\texit          - Sai do programa\n");
     return 0;
 }
@@ -241,8 +252,11 @@ struct tfs_command cmds[] = {
     {"help", tfs_cmd_help},
     {"rm", tfs_cmd_rm},
     {"del", tfs_cmd_rm},
+    {"cwd", tfs_cmd_cwd},
+    {"pwd", tfs_cmd_cwd},
     {NULL, NULL}
 };
+
 struct tfs_args_t tfs_repl_handle() {
     struct tfs_strstack_t strstack = tfs_strstack__init(10);
     struct tfs_args_t args = tfs_args_init();
@@ -269,14 +283,17 @@ struct tfs_args_t tfs_repl_handle() {
     return args;
 }
 
-void print_cwd(struct tfs_node_t *cwd) {
-    if (cwd == NULL)
+void tfs_path_print(struct tfs_node_t *cwd) {
+    if (cwd == NULL) {
+        printf("/");
         return;
+    }
     if (cwd->father != NULL)
-        print_cwd(*cwd->father);
+        tfs_path_print(*cwd->father);
     if (cwd->node_of)
         printf("/%s", cwd->node_of->name);
 }
+
 
 void tfs_command_handle(struct tfs_args_t args) {
         for (int i = 0; cmds[i].function != NULL; i++) {
@@ -321,7 +338,7 @@ int main(int argc, char **argv) {
     while (running && !feof(stdin)) {
         // Printa cwd verde
         printf("\033[0;32m");
-        print_cwd(*tfs_get_cwd());
+        tfs_path_print(*tfs_get_cwd());
         printf("\033[0m");
         // Termina de printar cwd verde
         printf(" $ -> ");
