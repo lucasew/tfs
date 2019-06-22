@@ -1,23 +1,28 @@
+#ifndef _TFS_TREE_PRETTYPRINT
+#define _TFS_TREE_PRETTYPRINT
+
 #include "./defs.h"
 #include <stdio.h>
 
-void print_members(struct tfs_members_t *mems, int level);
-void print_node(struct tfs_node_t *node, int level);
+void tfs_members__print(struct tfs_members_t *mems, int level);
+void tfs_node__print(struct tfs_node_t *node, int level);
 
-void print_members(struct tfs_members_t *mems, int level) {
+void tfs_members__print(struct tfs_members_t *mems, int level) {
     if (mems == NULL)
         return;
     for (int i = 0; i < level; i++)
         printf(" ");
     printf("%s\n", mems->name);
-    print_node(mems->child, level);
-    print_members(mems->next, level);
+    tfs_node__print(mems->child, level);
+    tfs_members__print(mems->next, level);
 }
 
-void print_node(struct tfs_node_t *node, int level) {
+void tfs_node__print(struct tfs_node_t *node, int level) {
     if (node == NULL)
         return;
     if (node->children == NULL)
         return;
-    print_members(*node->children, level + 1);
+    tfs_members__print(*node->children, level + 1);
 }
+
+#endif

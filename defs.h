@@ -1,5 +1,5 @@
-#ifndef TREEFS_DEFS
-#define TREEFS_DEFS
+#ifndef _TFS_DEFS
+#define _TFS_DEFS
 
 struct tfs_app_ctx_t {
     struct tfs_node_t **root; // Raiz do bgl

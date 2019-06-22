@@ -15,4 +15,5 @@ int tfs_strstack__push(struct tfs_strstack_t *this, char c);
 int tfs_strstack__read_until(struct tfs_strstack_t *this, FILE *f, char until);
 char *tfs_strstack__unwrap(struct tfs_strstack_t *this);
 char *tfs_strstack__read_until_str(char *in, char symbol);
+
 #endif

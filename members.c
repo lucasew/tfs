@@ -1,3 +1,6 @@
+#ifndef _TFS_MEMBERS
+#define _TFS_MEMBERS
+
 #include "./defs.h"
 #include <stdlib.h>
 #include <assert.h>
@@ -49,3 +52,4 @@ struct tfs_node_t **tfs_members__append(struct tfs_node_t **node, char *name) {
     return NULL;
 }
 
+#endif

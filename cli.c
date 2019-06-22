@@ -2,6 +2,7 @@
 #include "./tree_prettyprint.c"
 #include "./defs.h"
 #include "./string_stack.h"
+#include "./args.c"
 
 struct tfs_app_ctx_t ctx;
 
@@ -29,10 +30,10 @@ struct tfs_node_t **tfs_get_cwd() {
         : ctx.root;
 }
 
-int mkdir(int argc, char **argv) {
+int tfs_cmd_mkdir(int argc, char **argv) {
     if (argc < 2)
         return 1;
-    mkdir(argc - 1, argv + 1); // Posso passar mais parâmetros numa tacada
+    tfs_cmd_mkdir(argc - 1, argv + 1); // Posso passar mais parâmetros numa tacada
     if (check_dirs && tfs_string_is_file(argv[1])) {
         printf("E: O caminho especificado '%s' é um arquivo!\n", argv[1]);
         return 1;
@@ -40,16 +41,16 @@ int mkdir(int argc, char **argv) {
     return tfs_node_mkdir(ctx.root, tfs_get_cwd(), argv[1]);
 }
 
-int touch(int argc, char **argv) {
+int tfs_cmd_touch(int argc, char **argv) {
     if (argc < 2)
         return 1;
     if (check_dirs && !tfs_string_is_file(argv[1]))
         printf("E: O caminho especificado '%s' não é um arquivo!\n", argv[1]);
-    touch(argc - 1, argv + 1);
+    tfs_cmd_touch(argc - 1, argv + 1);
     return tfs_node_mkdir(ctx.root, tfs_get_cwd(), argv[1]);
 }
 
-int ls(int argc, char **argv) {
+int tfs_cmd_ls(int argc, char **argv) {
     struct tfs_node_t **to_ls = tfs_get_cwd();
     if (argc >= 2) {
         to_ls = tfs_node_chdir(to_ls, argv[1]);
@@ -72,7 +73,7 @@ int ls(int argc, char **argv) {
     return 1;
 }
 
-int tree(int argc, char **argv) {
+int tfs_cmd_tree(int argc, char **argv) {
     struct tfs_node_t **origin = tfs_get_cwd();
     if (argc >= 2) {
         origin = tfs_node_chdir(origin, argv[1]);
@@ -83,11 +84,11 @@ int tree(int argc, char **argv) {
     }
     if (!*origin)
         return 1;
-    print_node(*origin, 0);
+    tfs_node__print(*origin, 0);
     return 0;
 }
 
-int cd(int argc, char **argv) {
+int tfs_cmd_cd(int argc, char **argv) {
     if (argc < 2) {
         printf("E: Argumentos insuficientes\n");
         return 1;
@@ -114,13 +115,7 @@ int cd(int argc, char **argv) {
     return 1;
 }
 
-struct arg_acc_t {
-    int argc;
-    char **argv;
-};
-
-void handle_command(struct arg_acc_t args);
-int load(int argc, char **argv) {
+int tfs_cmd_load(int argc, char **argv) {
     int errs = 0;
     while (argc >= 2) {
         FILE *f;
@@ -157,17 +152,17 @@ int load(int argc, char **argv) {
     return errs;
 }
 
-int enable_dir_check(int argc, char **argv) {
+int tfs_cmd_enable_dir_check(int argc, char **argv) {
     check_dirs = 1;
     return 0;
 }
 
-int disable_dir_check(int argc, char **argv) {
+int tfs_cmd_disable_dir_check(int argc, char **argv) {
     check_dirs = 0;
     return 0;
 }
 
-int help(int argc, char **argv) {
+int tfs_cmd_help(int argc, char **argv) {
     printf("TFS - Tree File System by Lucas59356 <lucas59356@gmail.com>\n");
     printf("COMANDOS\n");
     printf("\tmkdir args... - Cria pastas\n");
@@ -185,41 +180,21 @@ int help(int argc, char **argv) {
 }
 
 struct tfs_command cmds[] = {
-    {"mkdir", mkdir},
-    {"touch", touch},
-    {"ls", ls},
-    {"dir", ls},
-    {"tree", tree},
-    {"cd", cd},
-    {"load", load},
-    {"edc", enable_dir_check},
-    {"ddc", disable_dir_check},
-    {"help", help},
+    {"mkdir", tfs_cmd_mkdir},
+    {"touch", tfs_cmd_touch},
+    {"ls", tfs_cmd_ls},
+    {"dir", tfs_cmd_ls},
+    {"tree", tfs_cmd_tree},
+    {"cd", tfs_cmd_cd},
+    {"load", tfs_cmd_load},
+    {"edc", tfs_cmd_enable_dir_check},
+    {"ddc", tfs_cmd_disable_dir_check},
+    {"help", tfs_cmd_help},
     {NULL, NULL}
 };
-
-struct arg_acc_t tfs_acc_init() {
-    struct arg_acc_t ret = {
-        .argc = 0,
-        .argv = malloc(sizeof(char*)*10)
-    };
-    return ret;
-}
-void tfs_acc_destroy(struct arg_acc_t self) {
-    for (int i = 0; i < self.argc; i++) {
-        free(*(self.argv + i));
-    }
-    free(self.argv);
-}
-
-void tfs_acc_push(struct arg_acc_t *self, char *str) {
-    self->argv[self->argc] = str;
-    self->argc++;
-}
-
-struct arg_acc_t handle_repl() {
+struct tfs_args_t tfs_repl_handle() {
     struct tfs_strstack_t strstack = tfs_strstack__init(10);
-    struct arg_acc_t args = tfs_acc_init();
+    struct tfs_args_t args = tfs_args_init();
     char c;
     int level = 0;
     while(1) {
@@ -233,13 +208,13 @@ struct arg_acc_t handle_repl() {
             continue;
         }
         if (c == ' ' && !level) {
-            tfs_acc_push(&args, tfs_strstack__unwrap(&strstack));
+            tfs_args__push(&args, tfs_strstack__unwrap(&strstack));
             strstack = tfs_strstack__init(10);
         } else {
             tfs_strstack__push(&strstack, c);
         }
     }
-    tfs_acc_push(&args, tfs_strstack__unwrap(&strstack));
+    tfs_args__push(&args, tfs_strstack__unwrap(&strstack));
     return args;
 }
 
@@ -252,7 +227,7 @@ void print_cwd(struct tfs_node_t *cwd) {
         printf("/%s", cwd->node_of->name);
 }
 
-void handle_command(struct arg_acc_t args) {
+void tfs_command_handle(struct tfs_args_t args) {
         for (int i = 0; cmds[i].function != NULL; i++) {
             if (!strcmp(args.argv[0], cmds[i].name)) {
                 if (cmds[i].function(args.argc, args.argv))
@@ -265,8 +240,8 @@ void handle_command(struct arg_acc_t args) {
 
 int running = 1;
 
-#include <signal.h>
 // https://github.com/lucasew/allegro_blasteroids/blob/master/src/util_signal.c
+#include <signal.h>
 int catch_signal(int sig, void (*handler)(int)) {
 #ifndef WIN32
     struct sigaction action;
@@ -279,28 +254,30 @@ int catch_signal(int sig, void (*handler)(int)) {
 #endif
 }
 
-void stop(int sig) {
+void tfs_stop(int sig) {
     running = 0;
 }
 
 int main(int argc, char **argv) {
-    catch_signal(SIGTERM, stop); // Parar o programa quando receber um sinal do sistema e não ter vazamento de memoria
-    catch_signal(SIGINT, stop);
+    catch_signal(SIGTERM, tfs_stop); // Parar o programa quando receber um sinal do sistema e não ter vazamento de memoria
+    catch_signal(SIGINT, tfs_stop);
     tfs_init();
-    load(argc, argv);
+    tfs_cmd_load(argc, argv);
+    printf("TFS - Tree File System by Lucas59356 <lucas59356@gmail.com>.\n");
+    printf("Digite help para ajuda.\n");
     while (running && !feof(stdin)) {
         print_cwd(*tfs_get_cwd());
         printf(" $ -> ");
-        struct arg_acc_t args = handle_repl();
+        struct tfs_args_t args = tfs_repl_handle();
         if (!strcmp(args.argv[0], "exit")) {
-            tfs_acc_destroy(args);
+            tfs_args__destroy(args);
             break;
         }
         if (!args.argc)
             goto endloop;
-        handle_command(args);
+        tfs_command_handle(args);
 endloop:
-        tfs_acc_destroy(args);
+        tfs_args__destroy(args);
     }
     tfs_destroy();
 }

@@ -1,3 +1,6 @@
+#ifndef _TFS_TREE
+#define _TFS_TREE
+
 #include "defs.h"
 #include "./string_stack.h"
 #include "./members.c"
@@ -139,4 +142,5 @@ int main() {
     assert(*root == NULL);
     tfs_node_destroy(root);
 }
+#endif
 #endif
