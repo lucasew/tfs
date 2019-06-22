@@ -12,17 +12,21 @@ struct tfs_node_t **tfs_members__append(struct tfs_node_t **node, char *name) {
         assert((*node = malloc(sizeof(struct tfs_node_t))) != NULL);
         (*node)->children = NULL;
         (*node)->father = NULL;
+        (*node)->node_of = NULL;
     }
     if ((*node)->children == NULL) {
         assert(((*node)->children = malloc(sizeof(struct tfs_members_t*))) != NULL);
         *(*node)->children = NULL;
     }
     struct tfs_members_t *member = malloc(sizeof(struct tfs_members_t));
-    member->child = NULL;
+    member->child = malloc(sizeof(struct tfs_members_t));
+    member->child->children = NULL;
+    member->child->father = node;
     member->name = name;
     member->next = NULL;
     if (*(*node)->children == NULL) {
         *(*node)->children = member;
+        member->child->node_of = member;
         return &member->child;
     }
     struct tfs_members_t *dummy = *(*node)->children;
@@ -31,11 +35,13 @@ struct tfs_node_t **tfs_members__append(struct tfs_node_t **node, char *name) {
     while((*this) != NULL) {
         if (!strcmp((*this)->name, name)) { // strcmp retorna 0 quando igual ^^
             free(member->name);
+            free(member->child);
             free(member);
             return &(*this)->child;
         }
         if ((*this)->next == NULL) {
             (*this)->next = member;
+            member->child->node_of = member;
             return &member->child;
         }
         *this = (*this)->next;
