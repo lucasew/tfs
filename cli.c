@@ -5,6 +5,8 @@
 
 struct tfs_app_ctx_t ctx;
 
+int check_dirs = 1;
+
 void tfs_init() {
     ctx.root = malloc(sizeof(struct tfs_node_t*));
     *ctx.root = NULL;
@@ -31,7 +33,7 @@ int mkdir(int argc, char **argv) {
     if (argc < 2)
         return 1;
     mkdir(argc - 1, argv + 1); // Posso passar mais parâmetros numa tacada
-    if (tfs_string_is_file(argv[1])) {
+    if (check_dirs && tfs_string_is_file(argv[1])) {
         printf("E: O caminho especificado '%s' é um arquivo!\n", argv[1]);
         return 1;
     }
@@ -41,7 +43,7 @@ int mkdir(int argc, char **argv) {
 int touch(int argc, char **argv) {
     if (argc < 2)
         return 1;
-    if (!tfs_string_is_file(argv[1]))
+    if (check_dirs && !tfs_string_is_file(argv[1]))
         printf("E: O caminho especificado '%s' não é um arquivo!\n", argv[1]);
     touch(argc - 1, argv + 1);
     return tfs_node_mkdir(ctx.root, tfs_get_cwd(), argv[1]);
@@ -51,6 +53,10 @@ int ls(int argc, char **argv) {
     struct tfs_node_t **to_ls = tfs_get_cwd();
     if (argc >= 2) {
         to_ls = tfs_node_chdir(to_ls, argv[1]);
+    }
+    if (!to_ls) {
+        printf("E: Não encontrado\n");
+        return 1;
     }
     if (*to_ls != NULL) {
         if ((*to_ls)->children != NULL) {
@@ -88,8 +94,11 @@ int cd(int argc, char **argv) {
     }
     struct tfs_node_t **cwd = tfs_get_cwd();
     cwd = tfs_node_chdir(cwd, argv[1]);
+    if (!cwd) {
+        return 1;
+    }
     if ((*cwd)->node_of)
-        if (tfs_string_is_file((*cwd)->node_of->name)) {
+        if (check_dirs && tfs_string_is_file((*cwd)->node_of->name)) {
             printf("E: Não é possível dar CD em arquivo\n");
             return 1;
         };
@@ -119,6 +128,8 @@ int load(int argc, char **argv) {
         if ((f = fopen(argv[1], "r")) == NULL) {
             errs++;
             printf("\nE: Não foi possível importar %s!\n", argv[1]);
+            argc--;
+            argv++;
             continue;
         }
         struct tfs_strstack_t stack = tfs_strstack__init(30);
@@ -127,7 +138,7 @@ int load(int argc, char **argv) {
             c = fgetc(f);
             if (c == '\n') {
                 char *path = tfs_strstack__unwrap(&stack);
-                printf("ADD %s\n", path);
+                /* printf("ADD %s\n", path); */
                 if (!tfs_node_mkdir(ctx.root, ctx.root, path))
                     printf(".");
                 else printf("x");
@@ -140,9 +151,37 @@ int load(int argc, char **argv) {
         fclose(f);
         argc--;
         argv++;
+        free(stack.raw);
         printf("\n");
     }
     return errs;
+}
+
+int enable_dir_check(int argc, char **argv) {
+    check_dirs = 1;
+    return 0;
+}
+
+int disable_dir_check(int argc, char **argv) {
+    check_dirs = 0;
+    return 0;
+}
+
+int help(int argc, char **argv) {
+    printf("TFS - Tree File System by Lucas59356 <lucas59356@gmail.com>\n");
+    printf("COMANDOS\n");
+    printf("\tmkdir args... - Cria pastas\n");
+    printf("\ttouch args... - Cria arquivos\n");
+    printf("\tls arg        - Lista os conteúdos de uma pasta\n");
+    printf("\tdir arg       - Alias para ls\n");
+    printf("\ttree arg      - Lista todos os elementos filhos de arg\n");
+    printf("\tcd arg        - Muda o caminho atual para arg\n");
+    printf("\tload args...  - Carrega uma lista de caminhos e aplica no caminho atual. Comando padrão na inicialização\n");
+    printf("\tedc           - Ativa checagem de arquivos e pastas usando o critério do ponto (padrão)\n");
+    printf("\tddc           - Desativa checagem de arquivos e pastas usando o critério do ponto\n");
+    printf("\thelp          - Mostra isso xD\n");
+    printf("\texit          - Sai do programa\n");
+    return 0;
 }
 
 struct tfs_command cmds[] = {
@@ -153,6 +192,9 @@ struct tfs_command cmds[] = {
     {"tree", tree},
     {"cd", cd},
     {"load", load},
+    {"edc", enable_dir_check},
+    {"ddc", disable_dir_check},
+    {"help", help},
     {NULL, NULL}
 };
 
@@ -221,11 +263,32 @@ void handle_command(struct arg_acc_t args) {
         printf("W: Comando não encontrado\n");
 }
 
+int running = 1;
+
+#include <signal.h>
+// https://github.com/lucasew/allegro_blasteroids/blob/master/src/util_signal.c
+int catch_signal(int sig, void (*handler)(int)) {
+#ifndef WIN32
+    struct sigaction action;
+    action.sa_handler = handler;
+    sigemptyset(&action.sa_mask);
+    action.sa_flags = 0;
+    return sigaction(sig, &action, 0); // 0 == NULL
+#else
+    return signal(SIGINT, handler) ? 0: 1;
+#endif
+}
+
+void stop(int sig) {
+    running = 0;
+}
 
 int main(int argc, char **argv) {
+    catch_signal(SIGTERM, stop); // Parar o programa quando receber um sinal do sistema e não ter vazamento de memoria
+    catch_signal(SIGINT, stop);
     tfs_init();
     load(argc, argv);
-    while (!feof(stdin)) {
+    while (running && !feof(stdin)) {
         print_cwd(*tfs_get_cwd());
         printf(" $ -> ");
         struct arg_acc_t args = handle_repl();

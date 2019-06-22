@@ -65,8 +65,12 @@ int tfs_node_mkdir(struct tfs_node_t** root, struct tfs_node_t** current, char *
         return 0;
     if (strlen(path) == 0)
         return 0;
-    if (*root == NULL)
+    if (*root == NULL) {
         assert((*root = malloc(sizeof(struct tfs_node_t))) != NULL);
+        (*root)->children = NULL;
+        (*root)->father = NULL;
+        (*root)->node_of = NULL;
+    }
     if (*path == '/')
         path++;
     char *filename = tfs_strstack__read_until_str(path, '/');
