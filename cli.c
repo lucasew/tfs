@@ -233,8 +233,9 @@ void print_cwd(struct tfs_node_t *cwd) {
 void tfs_command_handle(struct tfs_args_t args) {
         for (int i = 0; cmds[i].function != NULL; i++) {
             if (!strcmp(args.argv[0], cmds[i].name)) {
-                if (cmds[i].function(args.argc, args.argv))
-                    /* tfs_log_warn("Comando terminado com erro\n"); */
+                cmds[i].function(args.argc, args.argv);
+                /* if (cmds[i].function(args.argc, args.argv)) */
+                /*     tfs_log_warn("Comando terminado com erro\n"); */
                 return;
             }
         }
@@ -270,7 +271,11 @@ int main(int argc, char **argv) {
     printf("TFS - Tree File System by Lucas59356 <lucas59356@gmail.com>.\n");
     tfs_log_info("Digite help para ajuda.\n");
     while (running && !feof(stdin)) {
+        // Printa cwd verde
+        printf("\033[0;32m");
         print_cwd(*tfs_get_cwd());
+        printf("\033[0m");
+        // Termina de printar cwd verde
         printf(" $ -> ");
         struct tfs_args_t args = tfs_repl_handle();
         if (!strcmp(args.argv[0], "exit")) {
