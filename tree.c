@@ -25,12 +25,16 @@ struct tfs_node_t** tfs_node_chdir(struct tfs_node_t **cwd, char *path) {
         printf("E: Caminho realmente inválido\n");
         return NULL;
     }
+    if (*path == '\0')
+        return cwd;
+    if (path[0] == '/')
+        path++; // Ignorar o primeiro / se tiver
+    if (strncmp(path, "..", 2) == 0)
+        return tfs_node_chdir((*cwd)->father, path + 2);
     if (path[0] == '.' && strlen(path) == 1) {
         printf("W: Caminho não alterado\n");
         return cwd;
     }
-    if (path[0] == '/')
-        path++; // Ignorar o primeiro / se tiver
     if (tfs_is_depth_path(path)) {
         char *folder = tfs_strstack__read_until_str(path, '/');
         if (folder == NULL)
