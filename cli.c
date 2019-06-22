@@ -3,6 +3,7 @@
 #include "./defs.h"
 #include "./string_stack.h"
 #include "./args.c"
+#include "./log.c"
 
 struct tfs_app_ctx_t ctx;
 
@@ -35,7 +36,7 @@ int tfs_cmd_mkdir(int argc, char **argv) {
         return 1;
     tfs_cmd_mkdir(argc - 1, argv + 1); // Posso passar mais parâmetros numa tacada
     if (check_dirs && tfs_string_is_file(argv[1])) {
-        printf("E: O caminho especificado '%s' é um arquivo!\n", argv[1]);
+        tfs_log_err("O caminho especificado '%s' é um arquivo!\n", argv[1]);
         return 1;
     }
     return tfs_node_mkdir(ctx.root, tfs_get_cwd(), argv[1]);
@@ -44,8 +45,9 @@ int tfs_cmd_mkdir(int argc, char **argv) {
 int tfs_cmd_touch(int argc, char **argv) {
     if (argc < 2)
         return 1;
-    if (check_dirs && !tfs_string_is_file(argv[1]))
-        printf("E: O caminho especificado '%s' não é um arquivo!\n", argv[1]);
+    if (check_dirs && !tfs_string_is_file(argv[1])) {
+        tfs_log_err("O caminho especificado '%s' não é um arquivo!\n", argv[1]);
+    }
     tfs_cmd_touch(argc - 1, argv + 1);
     return tfs_node_mkdir(ctx.root, tfs_get_cwd(), argv[1]);
 }
@@ -56,7 +58,7 @@ int tfs_cmd_ls(int argc, char **argv) {
         to_ls = tfs_node_chdir(to_ls, argv[1]);
     }
     if (!to_ls) {
-        printf("E: Não encontrado\n");
+        tfs_log_err("Não encontrado\n");
         return 1;
     }
     if (*to_ls != NULL) {
@@ -69,7 +71,7 @@ int tfs_cmd_ls(int argc, char **argv) {
             return 0;
         }
     }
-    printf("E: Caminho não encontrado\n");
+    tfs_log_err("Caminho não encontrado\n");
     return 1;
 }
 
@@ -79,7 +81,7 @@ int tfs_cmd_tree(int argc, char **argv) {
         origin = tfs_node_chdir(origin, argv[1]);
     }
     if (!origin) {
-        printf("E: Caminho inválido\n");
+        tfs_log_err("Caminho inválido\n");
         return 1;
     }
     if (!*origin)
@@ -90,7 +92,7 @@ int tfs_cmd_tree(int argc, char **argv) {
 
 int tfs_cmd_cd(int argc, char **argv) {
     if (argc < 2) {
-        printf("E: Argumentos insuficientes\n");
+        tfs_log_err("Argumentos insuficientes\n");
         return 1;
     }
     struct tfs_node_t **cwd = tfs_get_cwd();
@@ -100,18 +102,18 @@ int tfs_cmd_cd(int argc, char **argv) {
     }
     if ((*cwd)->node_of)
         if (check_dirs && tfs_string_is_file((*cwd)->node_of->name)) {
-            printf("E: Não é possível dar CD em arquivo\n");
+            tfs_log_err("Não é possível dar CD em arquivo\n");
             return 1;
         };
     if (cwd == NULL) {
-        printf("E: Não foi possível encontrar a pasta\n");
+        tfs_log_err("Não foi possível encontrar a pasta\n");
         return 1;
     }
     if (*cwd != NULL) {
         ctx.cwd = cwd;
         return 0;
     }
-    printf("E: Caminho inválido");
+    tfs_log_err("Caminho inválido");
     return 1;
 }
 
@@ -119,10 +121,11 @@ int tfs_cmd_load(int argc, char **argv) {
     int errs = 0;
     while (argc >= 2) {
         FILE *f;
-        printf("I: Importando %s...", argv[1]);
+        tfs_log_info("Importando %s...", argv[1]);
         if ((f = fopen(argv[1], "r")) == NULL) {
             errs++;
-            printf("\nE: Não foi possível importar %s!\n", argv[1]);
+            printf("\n");
+            tfs_log_err("Não foi possível importar %s!\n", argv[1]);
             argc--;
             argv++;
             continue;
@@ -163,19 +166,19 @@ int tfs_cmd_disable_dir_check(int argc, char **argv) {
 }
 
 int tfs_cmd_help(int argc, char **argv) {
-    printf("TFS - Tree File System by Lucas59356 <lucas59356@gmail.com>\n");
-    printf("COMANDOS\n");
-    printf("\tmkdir args... - Cria pastas\n");
-    printf("\ttouch args... - Cria arquivos\n");
-    printf("\tls arg        - Lista os conteúdos de uma pasta\n");
-    printf("\tdir arg       - Alias para ls\n");
-    printf("\ttree arg      - Lista todos os elementos filhos de arg\n");
-    printf("\tcd arg        - Muda o caminho atual para arg\n");
-    printf("\tload args...  - Carrega uma lista de caminhos e aplica no caminho atual. Comando padrão na inicialização\n");
-    printf("\tedc           - Ativa checagem de arquivos e pastas usando o critério do ponto (padrão)\n");
-    printf("\tddc           - Desativa checagem de arquivos e pastas usando o critério do ponto\n");
-    printf("\thelp          - Mostra isso xD\n");
-    printf("\texit          - Sai do programa\n");
+    tfs_log_info("TFS - Tree File System by Lucas59356 <lucas59356@gmail.com>\n");
+    tfs_log_info("COMANDOS\n");
+    tfs_log_info("\tmkdir args... - Cria pastas\n");
+    tfs_log_info("\ttouch args... - Cria arquivos\n");
+    tfs_log_info("\tls arg        - Lista os conteúdos de uma pasta\n");
+    tfs_log_info("\tdir arg       - Alias para ls\n");
+    tfs_log_info("\ttree arg      - Lista todos os elementos filhos de arg\n");
+    tfs_log_info("\tcd arg        - Muda o caminho atual para arg\n");
+    tfs_log_info("\tload args...  - Carrega uma lista de caminhos e aplica no caminho atual. Comando padrão na inicialização\n");
+    tfs_log_info("\tedc           - Ativa checagem de arquivos e pastas usando o critério do ponto (padrão)\n");
+    tfs_log_info("\tddc           - Desativa checagem de arquivos e pastas usando o critério do ponto\n");
+    tfs_log_info("\thelp          - Mostra isso xD\n");
+    tfs_log_info("\texit          - Sai do programa\n");
     return 0;
 }
 
@@ -231,11 +234,11 @@ void tfs_command_handle(struct tfs_args_t args) {
         for (int i = 0; cmds[i].function != NULL; i++) {
             if (!strcmp(args.argv[0], cmds[i].name)) {
                 if (cmds[i].function(args.argc, args.argv))
-                    printf("W: Comando terminado com erro\n");
+                    /* tfs_log_warn("Comando terminado com erro\n"); */
                 return;
             }
         }
-        printf("W: Comando não encontrado\n");
+        tfs_log_err("Comando não encontrado\n");
 }
 
 int running = 1;
@@ -255,6 +258,7 @@ int catch_signal(int sig, void (*handler)(int)) {
 }
 
 void tfs_stop(int sig) {
+    tfs_log_info("Saindo...");
     running = 0;
 }
 
@@ -264,7 +268,7 @@ int main(int argc, char **argv) {
     tfs_init();
     tfs_cmd_load(argc, argv);
     printf("TFS - Tree File System by Lucas59356 <lucas59356@gmail.com>.\n");
-    printf("Digite help para ajuda.\n");
+    tfs_log_info("Digite help para ajuda.\n");
     while (running && !feof(stdin)) {
         print_cwd(*tfs_get_cwd());
         printf(" $ -> ");
