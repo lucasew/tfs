@@ -1,0 +1,7 @@
+#ifndef _TFS_VERSION
+#define _TFS_VERSION
+
+const char* tfs_version = "__VERSION__";
+
+#endif
+

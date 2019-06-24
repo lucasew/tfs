@@ -4,6 +4,7 @@
 #include "./string_stack.h"
 #include "./args.c"
 #include "./log.c"
+#include "./version.h"
 
 struct tfs_app_ctx_t ctx;
 
@@ -333,7 +334,7 @@ int main(int argc, char **argv) {
     catch_signal(SIGINT, tfs_stop);
     tfs_init();
     tfs_cmd_load(argc, argv);
-    printf("TFS - Tree File System by Lucas59356 <lucas59356@gmail.com>.\n");
+    printf("TFS - Tree File System %s by Lucas59356 <lucas59356@gmail.com>.\n", tfs_version);
     tfs_log_info("Digite help para ajuda.\n");
     while (running && !feof(stdin)) {
         // Printa cwd verde
