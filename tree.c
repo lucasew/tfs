@@ -1,3 +1,7 @@
+/*
+ * APIs da estrutura principal
+ */
+
 #ifndef _TFS_TREE
 #define _TFS_TREE
 

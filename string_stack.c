@@ -1,3 +1,7 @@
+/*
+ * Pilha de char que ao final devolve uma string
+ */
+
 #include <stdlib.h>
 #include <stdio.h>
 #include <assert.h>

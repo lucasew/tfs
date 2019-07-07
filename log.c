@@ -1,3 +1,7 @@
+/*
+ * Utilitários para mostra de relatórios mais coloridos
+ */
+
 #ifndef _TFS_LOG
 #define _TFS_LOG
 #include <stdio.h>

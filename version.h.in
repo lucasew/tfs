@@ -1,3 +1,7 @@
+/*
+ * Arquivo que gera a header com a versão
+ */
+
 #ifndef _TFS_VERSION
 #define _TFS_VERSION
 

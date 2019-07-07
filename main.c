@@ -1,3 +1,7 @@
+/*
+ * Programa para testes iniciais da estrutura
+ */
+
 #include "./tree.c"
 #include "./tree_prettyprint.c"
 

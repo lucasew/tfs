@@ -1,3 +1,8 @@
+/*
+ * Stack para armazenamento de argumentos, atualmente tem limite de até 10 argumentos.
+ * Retorna argc e argv como é recebido do main quando se chama o programa.
+ */
+
 #ifndef _TFS_ARGS
 #define _TFS_ARGS
 #include <stdlib.h>

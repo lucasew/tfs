@@ -1,3 +1,8 @@
+/*
+ * Implementação dos utilitários e funções que se utilizarão da API da estrutura
+ * Controle do fluxo do programa principal
+ */
+
 #include "./tree.c"
 #include "./tree_prettyprint.c"
 #include "./defs.h"

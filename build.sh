@@ -1,5 +1,7 @@
 #! /usr/bin/bash
 
+# Script pra compilar o programa
+
 # FIXME: E se não tiver o git instalado?
 pkgver() {
     # https://wiki.archlinux.org/index.php/VCS_package_guidelines
