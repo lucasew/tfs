@@ -241,7 +241,18 @@ int tfs_cmd_help(int argc, char **argv) {
     tfs_log_info("\tdel           - Alias de rm\n");
     tfs_log_info("\tcwd           - Exibe a pasta atual\n");
     tfs_log_info("\tpwd           - Alias de cwd\n");
+    tfs_log_info("\tclear         - Limpa a tela\n");
+    tfs_log_info("\tcls           - Alias de clear\n");
     tfs_log_info("\texit          - Sai do programa\n");
+    return 0;
+}
+
+int tfs_cmd_cls(int argc, char **argv) {
+#ifndef WIN32
+    system("clear");
+#else
+    system("cls");
+#endif
     return 0;
 }
 
@@ -260,6 +271,8 @@ struct tfs_command cmds[] = {
     {"del", tfs_cmd_rm},
     {"cwd", tfs_cmd_cwd},
     {"pwd", tfs_cmd_cwd},
+    {"clear", tfs_cmd_cls},
+    {"cls", tfs_cmd_cls},
     {NULL, NULL}
 };
 
@@ -314,6 +327,7 @@ void tfs_command_handle(struct tfs_args_t args) {
 }
 
 int running = 1;
+
 
 // https://github.com/lucasew/allegro_blasteroids/blob/master/src/util_signal.c
 #include <signal.h>
