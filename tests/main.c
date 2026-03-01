@@ -2,8 +2,8 @@
  * Programa para testes iniciais da estrutura
  */
 
-#include "./tree.c"
-#include "./tree_prettyprint.c"
+#include "../src/core/tree.h"
+#include "../src/core/tree_prettyprint.h"
 
 int main() {
     struct tfs_node_t *root = NULL;

@@ -1,15 +1,18 @@
+#include <stdlib.h>
+#include <string.h>
+#include "../core/members.h"
 /*
  * Implementação dos utilitários e funções que se utilizarão da API da estrutura
  * Controle do fluxo do programa principal
  */
 
-#include "./tree.c"
-#include "./tree_prettyprint.c"
-#include "./defs.h"
-#include "./string_stack.h"
-#include "./args.c"
-#include "./log.c"
-#include "./version.h"
+#include "../core/tree.h"
+#include "../core/tree_prettyprint.h"
+#include "../core/defs.h"
+#include "../utils/string_stack.h"
+#include "../utils/args.h"
+#include "../utils/log.h"
+#include "../../version.h"
 
 struct tfs_app_ctx_t ctx;
 
@@ -77,7 +80,7 @@ int tfs_cmd_ls(int argc, char **argv) {
             return 0;
         }
     }
-    tfs_log_err("Caminho não encontrado\n");
+    tfs_report_error("Caminho não encontrado");
     return 1;
 }
 
@@ -323,7 +326,7 @@ void tfs_command_handle(struct tfs_args_t args) {
                 return;
             }
         }
-        tfs_log_err("Comando não encontrado\n");
+        tfs_report_error("Comando não encontrado");
 }
 
 int running = 1;

@@ -1,7 +1,7 @@
 #ifndef _TFS_MEMBERS
 #define _TFS_MEMBERS
 
-#include "./defs.h"
+#include "defs.h"
 #include <stdlib.h>
 #include <assert.h>
 #include <string.h>

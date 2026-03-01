@@ -3,14 +3,10 @@
  * Retorna argc e argv como é recebido do main quando se chama o programa.
  */
 
+#include "args.h"
 #ifndef _TFS_ARGS
 #define _TFS_ARGS
 #include <stdlib.h>
-
-struct tfs_args_t {
-    int argc;
-    char **argv;
-};
 
 
 struct tfs_args_t tfs_args_init() {

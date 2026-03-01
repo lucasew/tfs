@@ -15,4 +15,4 @@ VERSION=$(pkgver || echo UNDEFINED)
 
 cat version.h.in | sed "s/__VERSION__/$VERSION/" > version.h
 
-clang cli.c string_stack.c -o main -g -O0 && echo COMPILADO!
+clang src/cli/cli.c src/core/tree.c src/core/members.c src/core/tree_prettyprint.c src/utils/string_stack.c src/utils/args.c src/utils/log.c -o main -g -O0 && echo COMPILADO!

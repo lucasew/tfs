@@ -1,3 +1,4 @@
+#include <string.h>
 /*
  * APIs da estrutura principal
  */
@@ -6,8 +7,8 @@
 #define _TFS_TREE
 
 #include "defs.h"
-#include "./string_stack.h"
-#include "./members.c"
+#include "../utils/string_stack.h"
+#include "members.h"
 #include <stdlib.h>
 #include <stdio.h>
 #include <assert.h>

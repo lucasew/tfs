@@ -5,7 +5,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <assert.h>
-#include "./string_stack.h"
+#include "string_stack.h"
 
 struct tfs_strstack_t tfs_strstack__init(int size) {
     struct tfs_strstack_t ret = {

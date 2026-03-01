@@ -1,7 +1,7 @@
 #ifndef _TFS_TREE_PRETTYPRINT
 #define _TFS_TREE_PRETTYPRINT
 
-#include "./defs.h"
+#include "defs.h"
 #include <stdio.h>
 
 void tfs_members__print(struct tfs_members_t *mems, int level);
